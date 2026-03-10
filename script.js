@@ -3,6 +3,51 @@
 
 let salaryChart = null;
 
+// Dati delle aliquote regionali (embedded per evitare problemi con fetch)
+const regionalTaxRates = {
+    "Abruzzo": { "rates": { "under_15000": 1.67, "15000_28000": 2.87, "28000_50000": 3.33, "over_50000": null } },
+    "Basilicata": { "rates": { "under_15000": 1.23, "15000_28000": null, "28000_50000": null, "over_50000": null } },
+    "Bolzano": { "rates": { "under_15000": 1.23, "15000_28000": 1.73, "28000_50000": null, "over_50000": null } },
+    "Calabria": { "rates": { "under_15000": 1.73, "15000_28000": null, "28000_50000": null, "over_50000": null } },
+    "Campania": { "rates": { "under_15000": 1.73, "15000_28000": 2.96, "28000_50000": 3.20, "over_50000": 3.33 } },
+    "Emilia-Romagna": { "rates": { "under_15000": 1.33, "15000_28000": 1.93, "28000_50000": 2.93, "over_50000": 3.33 } },
+    "Friuli-Venezia Giulia": { "rates": { "under_15000": 0.70, "15000_28000": 1.23, "28000_50000": null, "over_50000": null } },
+    "Lazio": { "rates": { "under_15000": 1.73, "15000_28000": 3.33, "28000_50000": null, "over_50000": null } },
+    "Liguria": { "rates": { "under_15000": 1.23, "15000_28000": 3.18, "28000_50000": 3.23, "over_50000": null } },
+    "Lombardia": { "rates": { "under_15000": 1.23, "15000_28000": 1.58, "28000_50000": 1.72, "over_50000": 1.73 } },
+    "Marche": { "rates": { "under_15000": 1.23, "15000_28000": 1.53, "28000_50000": 1.70, "over_50000": 1.73 } },
+    "Molise": { "rates": { "under_15000": 2.03, "15000_28000": 2.23, "28000_50000": 2.63, "over_50000": null } },
+    "Piemonte": { "rates": { "under_15000": 1.62, "15000_28000": 2.13, "28000_50000": 2.75, "over_50000": 3.33 } },
+    "Puglia": { "rates": { "under_15000": 1.33, "15000_28000": 1.43, "28000_50000": 1.63, "over_50000": 1.85 } },
+    "Sardegna": { "rates": { "under_15000": 1.23, "15000_28000": null, "28000_50000": null, "over_50000": null } },
+    "Sicilia": { "rates": { "under_15000": 1.23, "15000_28000": null, "28000_50000": null, "over_50000": null } },
+    "Toscana": { "rates": { "under_15000": 1.42, "15000_28000": 1.43, "28000_50000": 3.32, "over_50000": 3.33 } },
+    "Trento": { "rates": { "under_15000": 1.23, "15000_28000": 1.73, "28000_50000": null, "over_50000": null } },
+    "Umbria": { "rates": { "under_15000": 1.73, "15000_28000": 3.02, "28000_50000": 3.12, "over_50000": 3.33 } },
+    "Valle d'Aosta": { "rates": { "under_15000": 1.23, "15000_28000": null, "28000_50000": null, "over_50000": null } },
+    "Veneto": { "rates": { "under_15000": 1.23, "15000_28000": null, "28000_50000": null, "over_50000": null } }
+};
+
+// Ottieni l'aliquota regionale per una regione e un imponibile
+function getRegionalTaxRate(region, imponibile) {
+    if (!regionalTaxRates || !regionalTaxRates[region]) {
+        return 0;
+    }
+    
+    const rates = regionalTaxRates[region].rates;
+    
+    // Determina lo scaglione in base all'imponibile
+    if (imponibile < 15000) {
+        return rates['under_15000'] || 0;
+    } else if (imponibile <= 28000) {
+        return rates['15000_28000'] || rates['under_15000'] || 0;
+    } else if (imponibile <= 50000) {
+        return rates['28000_50000'] || rates['15000_28000'] || rates['under_15000'] || 0;
+    } else {
+        return rates['over_50000'] || rates['28000_50000'] || rates['15000_28000'] || rates['under_15000'] || 0;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const salaryForm = document.getElementById('salary-form');
     const resultsSection = document.getElementById('results');
@@ -17,7 +62,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Calcola la tredicesima (stima basata su stipendio lordo mensile)
     function calculateThirteenthMonth(grossMonthly, monthlyPayments) {
         if (monthlyPayments >= 13) {
-            // La tredicesima è tipicamente equivalente a un mese di stipendio
             return grossMonthly;
         }
         return 0;
@@ -26,20 +70,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Calcola la quattordicesima (stima basata su stipendio lordo mensile)
     function calculateFourteenthMonth(grossMonthly, monthlyPayments) {
         if (monthlyPayments >= 14) {
-            // La quattordicesima è tipicamente equivalente a un mese di stipendio
             return grossMonthly;
         }
         return 0;
     }
 
     // Calcolo del costo aziendale totale (stima)
-    // Include contributi INPS e altri oneri
     function calculateEmployerCost(grossAnnual, monthlyPayments) {
-        // I contributi INPS per dipendenti privati sono circa il 30-32% del lordo
-        // Questo è un valore approssimativo che dovrai personalizzare
         const employerContributionRate = 0.31; // 31%
         const additionalCosts = grossAnnual * employerContributionRate;
-        
         return grossAnnual + additionalCosts;
     }
 
@@ -55,16 +94,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Calcolo dei contributi INPS (9.1%)
     function calculateINPS(grossAnnual) {
-        const inpsCoefficient = 0.091; // 9.1%
+        const inpsCoefficient = 0.091;
         return grossAnnual * inpsCoefficient;
     }
 
     // Calcolo della riduzione dell'imposta
-    // Scaglioni:
-    // < 15000 -> 1955
-    // 15000 - 28000 -> 1910 + (1190 * (28000 - imponibile) / 13000)
-    // 28000 - 50000 -> 1910 * ((50000 - imponibile) / 22000)
-    // > 50000 -> 0
     function calculateTaxReduction(imponibile) {
         if (imponibile < 15000) {
             return 1955;
@@ -78,23 +112,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Calcolo progressivo dell'IRPEF
-    // Scaglioni:
-    // < 28000 -> 23%
-    // 28000 - 50000 -> 33%
-    // > 50000 -> 43%
     function calculateIRPEF(imponibile) {
         if (imponibile < 28000) {
             return 0.23 * imponibile;
         } else if (imponibile <= 50000) {
-            // Primo scaglione: 23% su 28000
-            // Secondo scaglione: 33% su (imponibile - 28000)
             const taxFirstBracket = 0.23 * 28000;
             const taxSecondBracket = 0.33 * (imponibile - 28000);
             return taxFirstBracket + taxSecondBracket;
         } else {
-            // Primo scaglione: 23% su 28000
-            // Secondo scaglione: 33% su (50000 - 28000)
-            // Terzo scaglione: 43% su (imponibile - 50000)
             const taxFirstBracket = 0.23 * 28000;
             const taxSecondBracket = 0.33 * (50000 - 28000);
             const taxThirdBracket = 0.43 * (imponibile - 50000);
@@ -109,14 +134,15 @@ document.addEventListener('DOMContentLoaded', function() {
         salaryChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Contributi INPS', 'IRPEF (Tasse)', 'Riduzione Fiscale', 'Stipendio Netto'],
+                labels: ['Contributi INPS', 'IRPEF', 'Addizionale Regionale', 'Riduzione Fiscale', 'Stipendio Netto'],
                 datasets: [{
-                    data: [0, 0, 0, 100],
+                    data: [0, 0, 0, 0, 100],
                     backgroundColor: [
-                        '#2196F3', // Blue for INPS
-                        '#F44336', // Red for IRPEF
-                        '#81C784', // Light green for Tax Reduction
-                        '#4CAF50'  // Green for Net Salary
+                        '#2196F3',
+                        '#F44336',
+                        '#FF9800',
+                        '#81C784',
+                        '#4CAF50'
                     ],
                     borderWidth: 0,
                     hoverOffset: 4
@@ -143,12 +169,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Aggiorna il grafico con i dati
-    function updateChart(grossAnnual, inpsContributions, netIrpef, taxReduction, netAnnual) {
+    function updateChart(grossAnnual, inpsContributions, irpef, regionalTax, taxReduction, netAnnual) {
         if (!salaryChart) return;
 
         salaryChart.data.datasets[0].data = [
             inpsContributions,
-            netIrpef,
+            irpef,
+            regionalTax,
             taxReduction,
             netAnnual
         ];
@@ -159,12 +186,9 @@ document.addEventListener('DOMContentLoaded', function() {
     salaryForm.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // Ottieni i valori dal form
         const grossAnnual = parseFloat(document.getElementById('gross-salary').value) || 0;
         const monthlyPayments = parseInt(document.getElementById('monthly-payments').value) || 13;
         const region = document.getElementById('region').value;
-        const contractType = document.getElementById('contract-type').value;
-        const dependents = parseInt(document.getElementById('dependents').value) || 0;
 
         // Calcolo contributi INPS (9.1%)
         const inpsContributions = calculateINPS(grossAnnual);
@@ -175,15 +199,18 @@ document.addEventListener('DOMContentLoaded', function() {
         // Calcolo IRPEF progressiva
         const irpef = calculateIRPEF(imponibile);
 
-    // Calcolo della riduzione dell'imposta
+        // Calcolo della riduzione dell'imposta
         const taxReduction = calculateTaxReduction(imponibile);
 
         // Calcolo IRPEF netta dopo riduzione
         const netIrpef = Math.max(0, irpef - taxReduction);
 
+        // Calcolo addizionale regionale
+        const regionalTaxRate = getRegionalTaxRate(region, imponibile);
+        const regionalTaxAmount = imponibile * (regionalTaxRate / 100);
+
         // Calcolo stipendio netto annuo e mensile
-        // Netto = Imponibile - IRPEF netta
-        const netAnnual = imponibile - netIrpef;
+        const netAnnual = imponibile - netIrpef - regionalTaxAmount;
         const netMonthly = netAnnual / monthlyPayments;
         const grossMonthly = grossAnnual / monthlyPayments;
 
@@ -201,8 +228,8 @@ document.addEventListener('DOMContentLoaded', function() {
         fourteenthMonthEl.textContent = formatCurrency(fourteenthMonth);
         employerCostEl.textContent = formatCurrency(employerCost);
 
-        // Aggiorna il grafico con 4 segmenti
-        updateChart(grossAnnual, inpsContributions, netIrpef, taxReduction, netAnnual);
+        // Aggiorna il grafico con 5 segmenti
+        updateChart(grossAnnual, inpsContributions, irpef, regionalTaxAmount, taxReduction, netAnnual);
 
         // Mostra la sezione risultati
         resultsSection.style.display = 'block';
@@ -211,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Inizializza il grafico al caricamento
     initChart();
 
-    // Pre-populate con un valore di esempio per facilitare il test
+    // Pre-populate con un valore di esempio
     document.getElementById('gross-salary').value = '30000';
     
     // Calcola automaticamente al caricamento
