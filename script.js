@@ -189,6 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const grossAnnual = parseFloat(document.getElementById('gross-salary').value) || 0;
         const monthlyPayments = parseInt(document.getElementById('monthly-payments').value) || 13;
         const region = document.getElementById('region').value;
+        const municipalTaxRate = parseFloat(document.getElementById('municipal-tax').value) || 0.80;
 
         // Calcolo contributi INPS (9.1%)
         const inpsContributions = calculateINPS(grossAnnual);
@@ -209,8 +210,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const regionalTaxRate = getRegionalTaxRate(region, imponibile);
         const regionalTaxAmount = imponibile * (regionalTaxRate / 100);
 
-        // Calcolo stipendio netto annuo e mensile
-        const netAnnual = imponibile - netIrpef - regionalTaxAmount;
+        // Calcolo addizionale comunale
+        const municipalTaxAmount = imponibile * (municipalTaxRate / 100);
+
+        // Calcolo stipendio netto annuo e mensile (dopo INPS, IRPEF, regionale e comunale)
+        const netAnnual = imponibile - netIrpef - regionalTaxAmount - municipalTaxAmount;
         const netMonthly = netAnnual / monthlyPayments;
         const grossMonthly = grossAnnual / monthlyPayments;
 
@@ -229,7 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
         employerCostEl.textContent = formatCurrency(employerCost);
 
         // Aggiorna il grafico con 5 segmenti
-        updateChart(grossAnnual, inpsContributions, irpef, regionalTaxAmount, taxReduction, netAnnual);
+        updateChart(grossAnnual, inpsContributions, irpef, regionalTaxAmount, taxReduction, netAnnual, municipalTaxAmount);
 
         // Mostra la sezione risultati
         resultsSection.style.display = 'block';
