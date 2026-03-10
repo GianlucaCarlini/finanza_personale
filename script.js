@@ -28,24 +28,62 @@ const regionalTaxRates = {
     "Veneto": { "rates": { "under_15000": 1.23, "15000_28000": null, "28000_50000": null, "over_50000": null } }
 };
 
-// Ottieni l'aliquota regionale per una regione e un imponibile
-function getRegionalTaxRate(region, imponibile) {
+// Calcolo progressivo dell'addizionale regionale (simile a IRPEF)
+function calculateRegionalTax(region, imponibile) {
     if (!regionalTaxRates || !regionalTaxRates[region]) {
         return 0;
     }
     
     const rates = regionalTaxRates[region].rates;
     
-    // Determina lo scaglione in base all'imponibile
-    if (imponibile < 15000) {
-        return rates['under_15000'] || 0;
-    } else if (imponibile <= 28000) {
-        return rates['15000_28000'] || rates['under_15000'] || 0;
-    } else if (imponibile <= 50000) {
-        return rates['28000_50000'] || rates['15000_28000'] || rates['under_15000'] || 0;
-    } else {
-        return rates['over_50000'] || rates['28000_50000'] || rates['15000_28000'] || rates['under_15000'] || 0;
+    // Funzione ausiliaria per ottenere la tariffa più vicina disponibile
+    function getClosestRate(rateKey, fallbackKeys) {
+        let rate = rates[rateKey];
+        if (rate !== null && rate !== undefined && !isNaN(rate)) {
+            return rate;
+        }
+        for (const fallbackKey of fallbackKeys) {
+            rate = rates[fallbackKey];
+            if (rate !== null && rate !== undefined && !isNaN(rate)) {
+                return rate;
+            }
+        }
+        return 0;
     }
+    
+    // Calcolo progressivo a scaglioni
+    let tax = 0;
+    
+    if (imponibile < 15000) {
+        // Solo primo scaglione
+        tax = imponibile * (getClosestRate('under_15000', []) / 100);
+    } else if (imponibile <= 28000) {
+        // Primo scaglione: 15000, secondo scaglione: (imponibile - 15000)
+        const firstBracket = 15000;
+        const secondBracket = imponibile - 15000;
+        tax = firstBracket * (getClosestRate('under_15000', []) / 100);
+        tax += secondBracket * (getClosestRate('15000_28000', ['under_15000']) / 100);
+    } else if (imponibile <= 50000) {
+        // Primo scaglione: 15000, secondo: 13000, terzo: (imponibile - 28000)
+        const firstBracket = 15000;
+        const secondBracket = 13000;
+        const thirdBracket = imponibile - 28000;
+        tax = firstBracket * (getClosestRate('under_15000', []) / 100);
+        tax += secondBracket * (getClosestRate('15000_28000', ['under_15000']) / 100);
+        tax += thirdBracket * (getClosestRate('28000_50000', ['15000_28000', 'under_15000']) / 100);
+    } else {
+        // Tutti e 4 gli scaglioni
+        const firstBracket = 15000;
+        const secondBracket = 13000;
+        const thirdBracket = 22000;
+        const fourthBracket = imponibile - 50000;
+        tax = firstBracket * (getClosestRate('under_15000', []) / 100);
+        tax += secondBracket * (getClosestRate('15000_28000', ['under_15000']) / 100);
+        tax += thirdBracket * (getClosestRate('28000_50000', ['15000_28000', 'under_15000']) / 100);
+        tax += fourthBracket * (getClosestRate('over_50000', ['28000_50000', '15000_28000', 'under_15000']) / 100);
+    }
+    
+    return tax;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -206,9 +244,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Calcolo IRPEF netta dopo riduzione
         const netIrpef = Math.max(0, irpef - taxReduction);
 
-        // Calcolo addizionale regionale
-        const regionalTaxRate = getRegionalTaxRate(region, imponibile);
-        const regionalTaxAmount = imponibile * (regionalTaxRate / 100);
+        // Calcolo addizionale regionale (progressivo a scaglioni)
+        const regionalTaxAmount = calculateRegionalTax(region, imponibile);
 
         // Calcolo addizionale comunale
         const municipalTaxAmount = imponibile * (municipalTaxRate / 100);
