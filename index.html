@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculatore Stipendio Netto</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header class="header">
+        <h1>Calculatore Stipendio Netto</h1>
+        <p>Calcolo dello stipendio netto a partire dal lordo (Italia)</p>
+    </header>
+
+    <main class="container">
+        <section class="calculator-section">
+            <h2>Calcolo Stipendio</h2>
+            
+            <form id="salary-form">
+                <div class="form-group">
+                    <label for="gross-salary">Stipendio Lordo Annuo (€)</label>
+                    <input type="number" id="gross-salary" name="gross-salary" 
+                           placeholder="Es. 30000" min="0" step="100" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="monthly-payments">Ratee Mensili (max 13)</label>
+                    <select id="monthly-payments" name="monthly-payments">
+                        <option value="13">13 ratee (stipendio + tredicesima)</option>
+                        <option value="14">14 ratee (stipendio + tredicesima + quattordicesima)</option>
+                        <option value="12">12 ratee (nessuna ratea extra)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="region">Regione di Lavoro</label>
+                    <select id="region" name="region">
+                        <option value="nord">Nord Italia</option>
+                        <option value="centro">Centro Italia</option>
+                        <option value="sud">Sud Italia</option>
+                        <option value="isole">Isole</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="contract-type">Tipo Contratto</label>
+                    <select id="contract-type" name="contract-type">
+                        <option value="full-time">Full-time (40 ore/settimana)</option>
+                        <option value="part-time">Part-time</option>
+                        <option value="co.co.co">Co.co.co (Collaborazione coordinata e continuativa)</option>
+                        <option value="altro">Altro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="dependents">Persone a Carico</label>
+                    <input type="number" id="dependents" name="dependents" 
+                           value="0" min="0" max="10">
+                </div>
+
+                <button type="submit" class="btn">Calcola</button>
+            </form>
+
+            <div id="results" class="results-section">
+                <h3>Risultati</h3>
+                
+                <div class="result-row">
+                    <span>Stipendio Lordo Mensile:</span>
+                    <strong id="gross-monthly">—</strong>
+                </div>
+                
+                <div class="result-row">
+                    <span>Stipendio Netto Mensile:</span>
+                    <strong id="net-monthly">—</strong>
+                </div>
+                
+                <div class="result-row">
+                    <span>Tredicesima (lorda):</span>
+                    <strong id="thirteenth-month">—</strong>
+                </div>
+                
+                <div class="result-row">
+                    <span>Quattordicesima (lorda):</span>
+                    <strong id="fourteenth-month">—</strong>
+                </div>
+                
+                <div class="result-row">
+                    <span>Costo Aziendale Totale:</span>
+                    <strong id="employer-cost">—</strong>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <h3>Composizione Stipendio</h3>
+                <div class="chart-container">
+                    <canvas id="salary-chart"></canvas>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: #2196F3;"></span>
+                        <span>Contributi INPS</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: #F44336;"></span>
+                        <span>IRPEF (Tasse)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: #81C784;"></span>
+                        <span>Riduzione Fiscale</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: #4CAF50;"></span>
+                        <span>Stipendio Netto</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="info-section">
+            <h2>Informazioni</h2>
+            <p>Questa calcolatrice fornisce stime basate sulle leggi fiscali italiane.</p>
+            <p>I valori mostrati sono indicativi e potrebbero variare in base a specifici contratti collettivi o agevolazioni fiscali.</p>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>© 2026 - Calcolatore Finanza Personale</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
