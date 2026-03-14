@@ -363,11 +363,126 @@ function initializeSalaryCalculator() {
     }
 }
 
+// TFR Calculation
+function calculateTFR(annualSalary, yearsOfService, monthsOfService, inflationRate) {
+    // Annual accrual: salary / 13.5
+    const annualAccrual = annualSalary / 13.5;
+    
+    // Total service period in years (including fractional months)
+    const totalYears = yearsOfService + (monthsOfService / 12);
+    
+    // Gross TFR (without revaluation)
+    const grossTFR = annualAccrual * totalYears;
+    
+    // Revaluation rate: 1.5% fixed + 75% of ISTAT inflation
+    const revaluationRate = 0.015 + (0.75 * (inflationRate / 100));
+    
+    // Indexed TFR with compound interest
+    const indexedTFR = grossTFR * Math.pow(1 + revaluationRate, yearsOfService);
+    
+    // Estimated effective tax rate (progressive IRPEF based on average income)
+    // Simplified calculation based on TFR amount brackets
+    let estimatedTaxRate;
+    if (indexedTFR < 8500) {
+        estimatedTaxRate = 0.23;
+    } else if (indexedTFR < 25000) {
+        estimatedTaxRate = 0.25;
+    } else if (indexedTFR < 40000) {
+        estimatedTaxRate = 0.35;
+    } else {
+        estimatedTaxRate = 0.43;
+    }
+    
+    // Net TFR
+    const netTFR = indexedTFR * (1 - estimatedTaxRate);
+    
+    return {
+        annualAccrual,
+        totalYears,
+        grossTFR,
+        revaluationRate,
+        indexedTFR,
+        estimatedTaxRate,
+        netTFR
+    };
+}
+
+// Calculate effective tax rate for TFR
+function calculateTFRTaxRate(tfrAmount) {
+    if (tfrAmount < 8500) {
+        return 0.23;
+    } else if (tfrAmount < 25000) {
+        return 0.25;
+    } else if (tfrAmount < 40000) {
+        return 0.35;
+    } else {
+        return 0.43;
+    }
+}
+
+// Initialize TFR calculator
+function initializeTFRCalculator() {
+    const tfrForm = document.getElementById('tfr-form');
+    if (!tfrForm) return;
+
+    const tfrResults = document.getElementById('tfr-results');
+    if (!tfrResults) return;
+
+    tfrForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const annualSalary = parseFloat(document.getElementById('annual-salary').value) || 0;
+        const yearsOfService = parseInt(document.getElementById('years-of-service').value) || 0;
+        const monthsOfService = parseInt(document.getElementById('months-of-service').value) || 0;
+        const inflationRate = parseFloat(document.getElementById('inflation-rate').value) || 2.0;
+
+        // Calculate TFR
+        const tfr = calculateTFR(annualSalary, yearsOfService, monthsOfService, inflationRate);
+
+        // Update results display
+        document.getElementById('result-annual-salary').textContent = formatCurrency(annualSalary);
+        document.getElementById('result-annual-accrual').textContent = formatCurrency(tfr.annualAccrual);
+        document.getElementById('result-accrual-rate').textContent = '7.41%';
+        document.getElementById('result-service-period').textContent = `${yearsOfService} anni, ${monthsOfService} mesi`;
+        document.getElementById('result-gross-tfr').textContent = formatCurrency(tfr.grossTFR);
+        document.getElementById('result-revaluation-rate').textContent = (tfr.revaluationRate * 100).toFixed(2) + '%';
+        document.getElementById('result-indexed-tfr').textContent = formatCurrency(tfr.indexedTFR);
+        document.getElementById('result-tax-rate').textContent = (tfr.estimatedTaxRate * 100).toFixed(1) + '%';
+        document.getElementById('result-net-tfr').textContent = formatCurrency(tfr.netTFR);
+
+        // Update formula display
+        document.getElementById('formula-annual-accrual').textContent = formatCurrency(tfr.annualAccrual);
+        document.getElementById('formula-gross-tfr').textContent = formatCurrency(tfr.grossTFR);
+        document.getElementById('formula-inflation').textContent = inflationRate.toFixed(1);
+        document.getElementById('formula-revaluation-rate').textContent = (tfr.revaluationRate * 100).toFixed(2);
+        document.getElementById('formula-indexed-tfr').textContent = formatCurrency(tfr.indexedTFR);
+        document.getElementById('formula-tax-rate').textContent = (tfr.estimatedTaxRate * 100).toFixed(1) + '%';
+
+        // Show results section
+        tfrResults.classList.remove('hidden');
+        
+        // Scroll to results
+        tfrResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // Pre-populate with example values
+    const annualSalaryInput = document.getElementById('annual-salary');
+    if (annualSalaryInput) annualSalaryInput.value = '30000';
+    
+    const yearsOfServiceInput = document.getElementById('years-of-service');
+    if (yearsOfServiceInput) yearsOfServiceInput.value = '10';
+    
+    // Auto-calculate
+    setTimeout(() => {
+        tfrForm.dispatchEvent(new Event('submit'));
+    }, 500);
+}
+
 // DOM ready
 document.addEventListener('DOMContentLoaded', function() {
     // Setup navigation
     const statusItems = document.querySelectorAll('.status-item');
-    
+
     statusItems.forEach(item => {
         item.addEventListener('click', function(e) {
             e.preventDefault();
@@ -382,4 +497,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load initial section (salary)
     loadSection('salary');
+    
+    // Initialize TFR calculator if on TFR page
+    initializeTFRCalculator();
 });

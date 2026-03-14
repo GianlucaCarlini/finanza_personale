@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TFR</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="status-bar">
+        <div class="status-bar-content">
+            <a href="salary-calculator.html" class="status-item">
+                <span class="status-icon">💰</span>
+                <span>Calcolo Stipendio</span>
+            </a>
+            <a href="pension-fund.html" class="status-item">
+                <span class="status-icon">🏦</span>
+                <span>Fondo Pensione</span>
+            </a>
+            <a href="ccnl.html" class="status-item">
+                <span class="status-icon">📋</span>
+                <span>CCNL</span>
+            </a>
+            <a href="tfr.html" class="status-item active">
+                <span class="status-icon">💼</span>
+                <span>TFR</span>
+            </a>
+            <a href="goals.html" class="status-item">
+                <span class="status-icon">🎯</span>
+                <span>Obiettivi</span>
+            </a>
+        </div>
+    </nav>
+
+    <header class="header">
+        <h1>Trattamento di Fine Rapporto (TFR)</h1>
+        <p>Calcola e gestisci il tuo TFR</p>
+    </header>
+
+    <main class="container">
+        <section class="calculator-section" id="tfr-calculator">
+            <h2>Calcolatore TFR</h2>
+            
+            <form id="tfr-form">
+                <div class="form-group">
+                    <label for="annual-salary">Retribuzione Lorda Annuale (€)</label>
+                    <input type="number" id="annual-salary" name="annual-salary" placeholder="Es. 30000" min="0" step="100" required>
+                    <div class="form-hint">Inserisci la retribuzione lorda annuale comprensiva di 13ª/14ª mensilità</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="years-of-service">Anni di Servizio</label>
+                    <input type="number" id="years-of-service" name="years-of-service" placeholder="Es. 10" min="0" step="1" required>
+                    <div class="form-hint">Numero di anni di lavoro presso l'attuale azienda</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="months-of-service">Mesi di Servizio</label>
+                    <input type="number" id="months-of-service" name="months-of-service" placeholder="Es. 6" min="0" max="11" step="1" value="0">
+                    <div class="form-hint">Mesi aggiuntivi oltre agli anni completi (0-11)</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inflation-rate">Tasso di Inflazione ISTAT Attuale (%)</label>
+                    <input type="number" id="inflation-rate" name="inflation-rate" placeholder="Es. 2.5" min="0" max="20" step="0.1" value="2.0">
+                    <div class="form-hint">Tasso di inflazione annuale per la rivalutazione (media recente: 1.5-3%)</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="tfr-allocation">Destinazione TFR</label>
+                    <select id="tfr-allocation" name="tfr-allocation">
+                        <option value="employer">Mantenuto in azienda</option>
+                        <option value="inps">Versato a INPS (aziende >50 dipendenti)</option>
+                        <option value="pension-fund">Allocato a Fondo Pensione</option>
+                    </select>
+                    <div class="form-hint">La destinazione influisce sulla tassazione e sulla crescita del montante</div>
+                </div>
+
+                <button type="submit" class="btn">Calcola TFR</button>
+            </form>
+        </section>
+
+        <section class="results-section hidden" id="tfr-results">
+            <h3>Risultati del Calcolo TFR</h3>
+            
+            <div class="result-row">
+                <span>Retribuzione Lorda Annuale:</span>
+                <strong id="result-annual-salary">€ 0,00</strong>
+            </div>
+            
+            <div class="result-row">
+                <span>Accantonamento Annuo (1/13.5):</span>
+                <strong id="result-annual-accrual">€ 0,00</strong>
+            </div>
+            
+            <div class="result-row">
+                <span>Percentuale Accantonamento:</span>
+                <strong id="result-accrual-rate">7.41%</strong>
+            </div>
+
+            <div class="result-row">
+                <span>Periodo di Servizio:</span>
+                <strong id="result-service-period">0 anni, 0 mesi</strong>
+            </div>
+
+            <div class="result-row">
+                <span>TFR Maturato Lordo:</span>
+                <strong id="result-gross-tfr" style="color: #1a237e; font-size: 1.2rem;">€ 0,00</strong>
+            </div>
+
+            <div class="result-row">
+                <span>Rivalutazione Media Annuale:</span>
+                <strong id="result-revaluation-rate">0.00%</strong>
+            </div>
+
+            <div class="result-row">
+                <span>Montante TFR Rivalutato:</span>
+                <strong id="result-indexed-tfr" style="color: #1a237e; font-size: 1.2rem;">€ 0,00</strong>
+            </div>
+
+            <div class="result-row">
+                <span>Tassazione Effettiva Stimata:</span>
+                <strong id="result-tax-rate">0%</strong>
+            </div>
+
+            <div class="result-row">
+                <span>TFR Netto Stimato:</span>
+                <strong id="result-net-tfr" style="color: #2e7d32; font-size: 1.3rem;">€ 0,00</strong>
+            </div>
+
+            <div class="insight-section">
+                <h3>Dettaglio del Calcolo</h3>
+                
+                <div class="insight-step">
+                    <h4>1. Accantonamento Annuo</h4>
+                    <p>Ogni anno, una quota del tuo stipendio lordo viene accantonata come TFR:</p>
+                    <div class="formula">
+                        TFR annuale = Retribuzione Lorda Annuale ÷ 13.5<br>
+                        = <span id="formula-annual-accrual">€ 0,00</span>
+                    </div>
+                </div>
+
+                <div class="insight-step">
+                    <h4>2. TFR Maturato (senza rivalutazione)</h4>
+                    <p>Il TFR maturato in base agli anni e mesi di servizio:</p>
+                    <div class="formula">
+                        TFR maturato = TFR annuale × (Anni + Mesi/12)<br>
+                        = <span id="formula-gross-tfr">€ 0,00</span>
+                    </div>
+                </div>
+
+                <div class="insight-step">
+                    <h4>3. Rivalutazione Annuale</h4>
+                    <p>Il TFR maturato viene rivalutato ogni anno secondo la formula:</p>
+                    <div class="formula">
+                        Rivalutazione = 1.5% + (75% × Tasso ISTAT)<br>
+                        = 1.5% + (75% × <span id="formula-inflation">2.0</span>%)<br>
+                        = <span id="formula-revaluation-rate">3.00</span>%
+                    </div>
+                    <p>Il montante viene capitalizzato annualmente con questo tasso.</p>
+                </div>
+
+                <div class="insight-step">
+                    <h4>4. Montante Finale Rivalutato</h4>
+                    <p>Il TFR maturato viene capitalizzato per ogni anno di servizio:</p>
+                    <div class="formula highlight">
+                        Montante = TFR maturato × (1 + tasso rivalutazione)^anni<br>
+                        = <span id="formula-indexed-tfr">€ 0,00</span>
+                    </div>
+                </div>
+
+                <div class="insight-step">
+                    <h4>5. Tassazione</h4>
+                    <p>Il TFR è soggetto a <strong>tassazione separata</strong> con aliquote IRPEF progressive basate sulla media degli ultimi 5 anni:</p>
+                    <ul class="formula-list">
+                        <li><strong> fino a € 8.500:</strong> 23%</li>
+                        <li><strong>€ 8.501 - € 25.000:</strong> 25%</li>
+                        <li><strong>€ 25.001 - € 40.000:</strong> 35%</li>
+                        <li><strong>oltre € 40.000:</strong> 43%</li>
+                    </ul>
+                    <p>La tassazione effettiva stimata è: <strong id="formula-tax-rate">0%</strong></p>
+                </div>
+
+                <div class="insight-note">
+                    <strong>Note Importanti:</strong>
+                    <ul>
+                        <li>Se il TFR è allocato a un <strong>fondo pensione</strong>, la tassazione è ridotta al 15% (o 9% con 15+ anni di partecipazione)</li>
+                        <li>È possibile prelevare il 70% del TFR dopo 8 anni per l'acquisto della prima casa</li>
+                        <li>Il TFR può essere parzialmente prelevato per spese sanitarie straordinarie</li>
+                        <li>Le aziende con più di 50 dipendenti devono versare il TFR a INPS</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="info-section" id="tfr-info">
+            <h2>Cos'è il TFR?</h2>
+            <p>Il <strong>Trattamento di Fine Rapporto (TFR)</strong> è una somma che il datore di lavoro accantona ogni anno a favore del lavoratore, da erogare al termine del rapporto di lavoro.</p>
+            
+            <h3 style="margin-top: 1.5rem; color: #1565c0;">Come viene calcolato</h3>
+            <p>Ogni anno viene accantonata una quota pari alla retribuzione lorda annua diviso <strong>13.5</strong> (circa il 7.41% dello stipendio lordo).</p>
+            
+            <h3 style="margin-top: 1.5rem; color: #1565c0;">Rivalutazione</h3>
+            <p>Il montante TFR viene rivalutato annualmente con:</p>
+            <ul style="margin-left: 1.5rem; color: #1565c0;">
+                <li><strong>1.5%</strong> fisso</li>
+                <li><strong>75%</strong> della variazione ISTAT dell'inflazione</li>
+            </ul>
+            
+            <h3 style="margin-top: 1.5rem; color: #1565c0;">Destinazione</h3>
+            <p>Il lavoratore può scegliere di:</p>
+            <ul style="margin-left: 1.5rem; color: #1565c0;">
+                <li>Mantenere il TFR in azienda (default se non si sceglie nulla)</li>
+                <li>Allocarlo a un fondo pensione negoziale o aperto</li>
+                <li>Per le aziende con >50 dipendenti, il TFR viene versato obbligatoriamente a INPS</li>
+            </ul>
+            
+            <h3 style="margin-top: 1.5rem; color: #1565c0;">Tassazione</h3>
+            <p>Il TFR è soggetto a <strong>tassazione separata</strong> con aliquote progressive IRPEF basate sulla media degli ultimi 5 anni di lavoro.</p>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>© 2026 - Calcolatore Finanza Personale</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
