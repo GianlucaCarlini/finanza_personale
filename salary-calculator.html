@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calcolatore Stipendio Netto</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']]
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <nav class="status-bar">
+        <div class="status-bar-content">
+            <a href="salary-calculator.html" class="status-item active">
+                <span class="status-icon">💰</span>
+                <span>Calcolo Stipendio</span>
+            </a>
+            <a href="pension-fund.html" class="status-item">
+                <span class="status-icon">🏦</span>
+                <span>Fondo Pensione</span>
+            </a>
+            <a href="ccnl.html" class="status-item">
+                <span class="status-icon">📋</span>
+                <span>CCNL</span>
+            </a>
+            <a href="budget.html" class="status-item">
+                <span class="status-icon">📊</span>
+                <span>Budget</span>
+            </a>
+            <a href="goals.html" class="status-item">
+                <span class="status-icon">🎯</span>
+                <span>Obiettivi</span>
+            </a>
+        </div>
+    </nav>
+
+    <header class="header">
+        <h1>Calcolatore Stipendio Netto</h1>
+        <p>Calcolo dello stipendio netto a partire dal lordo (Italia)</p>
+    </header>
+
+    <main class="container">
+        <section class="calculator-section" id="salary-calculator">
+            <h2>Calcolo Stipendio</h2>
+
+            <form id="salary-form">
+                <div class="form-group">
+                    <label for="gross-salary">Stipendio Lordo Annuo (€)</label>
+                    <input type="number" id="gross-salary" name="gross-salary"
+                           placeholder="Es. 30000" min="0" step="100" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="monthly-payments">Ratee Mensili (max 13)</label>
+                    <select id="monthly-payments" name="monthly-payments">
+                        <option value="13">13 ratee (stipendio + tredicesima)</option>
+                        <option value="14">14 ratee (stipendio + tredicesima + quattordicesima)</option>
+                        <option value="12">12 ratee (nessuna ratea extra)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="region">Regione</label>
+                    <select id="region" name="region">
+                        <option value="Abruzzo">Abruzzo</option>
+                        <option value="Basilicata">Basilicata</option>
+                        <option value="Bolzano">Bolzano</option>
+                        <option value="Calabria">Calabria</option>
+                        <option value="Campania">Campania</option>
+                        <option value="Emilia-Romagna">Emilia-Romagna</option>
+                        <option value="Friuli-Venezia Giulia">Friuli-Venezia Giulia</option>
+                        <option value="Lazio">Lazio</option>
+                        <option value="Liguria">Liguria</option>
+                        <option value="Lombardia">Lombardia</option>
+                        <option value="Marche">Marche</option>
+                        <option value="Molise">Molise</option>
+                        <option value="Piemonte">Piemonte</option>
+                        <option value="Puglia">Puglia</option>
+                        <option value="Sardegna">Sardegna</option>
+                        <option value="Sicilia">Sicilia</option>
+                        <option value="Toscana">Toscana</option>
+                        <option value="Trento">Trento</option>
+                        <option value="Umbria">Umbria</option>
+                        <option value="Valle d'Aosta">Valle d'Aosta</option>
+                        <option value="Veneto">Veneto</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="contract-type">Tipo Contratto</label>
+                    <select id="contract-type" name="contract-type">
+                        <option value="full-time">Full-time (40 ore/settimana)</option>
+                        <option value="part-time">Part-time</option>
+                        <option value="co.co.co">Co.co.co (Collaborazione coordinata e continuativa)</option>
+                        <option value="altro">Altro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="dependents">Persone a Carico</label>
+                    <input type="number" id="dependents" name="dependents"
+                           value="0" min="0" max="10">
+                </div>
+
+                <div class="form-group">
+                    <label for="municipal-tax">Addizionale Comunale (%)</label>
+                    <input type="number" id="municipal-tax" name="municipal-tax"
+                           value="0.80" min="0" step="0.01">
+                    <small class="form-hint">Aliquota predefinita 0.80%, puoi modificarla</small>
+                </div>
+
+                <button type="submit" class="btn">Calcola</button>
+            </form>
+
+            <div id="results" class="results-section" style="display: none;">
+                <h3>Risultati</h3>
+
+                <div class="result-row">
+                    <span>Stipendio Lordo Mensile:</span>
+                    <strong id="gross-monthly">—</strong>
+                </div>
+
+                <div class="result-row">
+                    <span>Stipendio Netto Mensile:</span>
+                    <strong id="net-monthly">—</strong>
+                </div>
+
+                <div class="result-row">
+                    <span>Tredicesima (lorda):</span>
+                    <strong id="thirteenth-month">—</strong>
+                </div>
+
+                <div class="result-row">
+                    <span>Quattordicesima (lorda):</span>
+                    <strong id="fourteenth-month">—</strong>
+                </div>
+
+                <div class="result-row">
+                    <span>Costo Aziendale Totale:</span>
+                    <strong id="employer-cost">—</strong>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <h3>Composizione Stipendio</h3>
+                <div class="chart-container">
+                    <canvas id="salary-chart"></canvas>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: #2196F3;"></span>
+                        <span>Contributi INPS</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: #F44336;"></span>
+                        <span>IRPEF (Tasse)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: #81C784;"></span>
+                        <span>Riduzione Fiscale</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: #4CAF50;"></span>
+                        <span>Stipendio Netto</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="breakdown-section">
+                <h3>Dettaglio Calcolo Stipendio Netto</h3>
+                <table class="breakdown-table">
+                    <thead>
+                        <tr>
+                            <th>Voce</th>
+                            <th>Importo (€)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="breakdown-body">
+                        <tr>
+                            <td>Stipendio Lordo Annuo</td>
+                            <td id="gross-yearly">—</td>
+                        </tr>
+                        <tr>
+                            <td>Contributi INPS (9.1%)</td>
+                            <td id="inps-amount">—</td>
+                        </tr>
+                        <tr>
+                            <td>Imponibile IRPEF</td>
+                            <td id="taxable-income">—</td>
+                        </tr>
+                        <tr>
+                            <td>IRPEF (lorda)</td>
+                            <td id="irpef-gross">—</td>
+                        </tr>
+                        <tr>
+                            <td>Riduzione Fiscale</td>
+                            <td id="tax-reduction">—</td>
+                        </tr>
+                        <tr>
+                            <td>Taglio Cuneo Fiscale</td>
+                            <td id="cuneo-fiscale">—</td>
+                        </tr>
+                        <tr>
+                            <td>IRPEF (netta)</td>
+                            <td id="irpef-net">—</td>
+                        </tr>
+                        <tr>
+                            <td>Addizionale Regionale</td>
+                            <td id="regional-tax">—</td>
+                        </tr>
+                        <tr>
+                            <td>Addizionale Comunale</td>
+                            <td id="municipal-tax-amount">—</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td><strong>Tasse e Contributi</strong></td>
+                            <td id="total-deductions">—</td>
+                        </tr>
+                        <tr class="net-row">
+                            <td><strong>Stipendio Netto Annuo</strong></td>
+                            <td id="net-yearly">—</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Stipendio Netto Mensile</strong></td>
+                            <td id="net-monthly-table">—</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <section class="insight-section">
+                <h3>Come viene calcolato lo stipendio netto?</h3>
+                <div class="insight-content">
+                    <p>Il calcolo dello stipendio netto avviene in più fasi, applicando via via le deduzioni previste dalla legge italiana. Ecco il processo step by step:</p>
+
+                    <div class="insight-step">
+                        <h4>1. Stipendio Lordo Annuo</h4>
+                        <p>Il punto di partenza è il tuo stipendio lordo annuo, che include tutti i compensi prima di qualsiasi trattenuta.</p>
+                    </div>
+
+                    <div class="insight-step">
+                        <h4>2. Contributi INPS</h4>
+                        <p>Dallo stipendio lordo vengono detratti i <strong>contributi INPS</strong>, che ammontano al <strong>9.1%</strong> dell'importo lordo. Questi contributi coprono pensione, invalidità, disoccupazione e altre prestazioni previdenziali.</p>
+                        <div class="formula">
+                            <span>\( \text{Imponibile} = \text{Stipendio Lordo} \times (1 - 0.091) \)</span>
+                        </div>
+                    </div>
+
+                    <div class="insight-step">
+                        <h4>3. IRPEF (Imposta sul Reddito delle Persone Fisiche)</h4>
+                        <p>Sull'imponibile (lordo - INPS) viene calcolata l'IRPEF, l'imposta sul reddito progressiva:</p>
+                        <ul>
+                            <li><strong>23%</strong> fino a €28.000</li>
+                            <li><strong>33%</strong> da €28.001 a €50.000</li>
+                            <li><strong>43%</strong> oltre €50.000</li>
+                        </ul>
+                        <div class="formula">
+                            <span>\( \text{IRPEF Lorda} = \)</span><br>
+                            <span>\( \quad 0.23 \times \min(\text{imponibile}, 28000) + \)</span><br>
+                            <span>\( \quad 0.33 \times \max(0, \min(\text{imponibile}, 50000) - 28000) + \)</span><br>
+                            <span>\( \quad 0.43 \times \max(0, \text{imponibile} - 50000) \)</span>
+                        </div>
+                        <p>Tuttavia, l'IRPEF viene ridotta tramite due meccanismi:</p>
+                        <div class="formula">
+                            <span>\( \text{IRPEF Netta} = \text{IRPEF Lorda} - \text{Riduzione Fiscale} - \text{Taglio Cuneo Fiscale} \)</span>
+                        </div>
+                    </div>
+
+                    <div class="insight-step">
+                        <h4>3a. Riduzione Fiscale</h4>
+                        <p>La riduzione fiscale è un bonus che diminuisce progressivamente con l'aumentare del reddito:</p>
+                        <ul class="formula-list">
+                            <li>\( \text{se } \text{imponibile} \leq 15000: \quad \text{Riduzione} = 1955 \)</li>
+                            <li>\( \text{se } 15000 < \text{imponibile} \leq 28000: \quad \text{Riduzione} = 1910 + 1190 \cdot \frac{28000 - \text{imponibile}}{13000} \)</li>
+                            <li>\( \text{se } 28000 < \text{imponibile} \leq 50000: \quad \text{Riduzione} = 1910 \cdot \frac{50000 - \text{imponibile}}{22000} \)</li>
+                            <li>\( \text{se } \text{imponibile} > 50000: \quad \text{Riduzione} = 0 \)</li>
+                        </ul>
+                    </div>
+
+                    <div class="insight-step">
+                        <h4>3b. Taglio Cuneo Fiscale</h4>
+                        <p>Il taglio del cuneo fiscale è un'altra agevolazione che riduce ulteriormente l'imposta:</p>
+                        <ul class="formula-list">
+                            <li>\( \text{se } \text{imponibile} \leq 8500: \quad \text{Taglio} = 0.071 \cdot \text{imponibile} \)</li>
+                            <li>\( \text{se } 8500 < \text{imponibile} \leq 15000: \quad \text{Taglio} = 603.50 + 0.053 \cdot (\text{imponibile} - 8500) \)</li>
+                            <li>\( \text{se } 15000 < \text{imponibile} \leq 20000: \quad \text{Taglio} = 952.00 + 0.048 \cdot (\text{imponibile} - 15000) \)</li>
+                            <li>\( \text{se } 20000 < \text{imponibile} \leq 32000: \quad \text{Taglio} = 1000 \)</li>
+                            <li>\( \text{se } 32000 < \text{imponibile} \leq 40000: \quad \text{Taglio} = 1000 \cdot \frac{40000 - \text{imponibile}}{8000} \)</li>
+                            <li>\( \text{se } \text{imponibile} > 40000: \quad \text{Taglio} = 0 \)</li>
+                        </ul>
+                    </div>
+
+                    <div class="insight-step">
+                        <h4>4. Addizionali Locali</h4>
+                        <p>Sull'imponibile vengono inoltre applicate le addizionali locali:</p>
+                        <div class="formula">
+                            <span>\( \text{Add. Regionale} = \text{imponibile} \times \text{aliquota regionale} \)</span><br>
+                            <span>\( \text{Add. Comunale} = \text{imponibile} \times 0.008 \)</span>
+                        </div>
+                        <ul>
+                            <li><strong>Addizionale Regionale</strong>: varia in base alla regione di residenza (da circa 0.70% al 3.33%)</li>
+                            <li><strong>Addizionale Comunale</strong>: aliquota standard del 0.80% (può variare di comune in comune)</li>
+                        </ul>
+                    </div>
+
+                    <div class="insight-step">
+                        <h4>5. Stipendio Netto</h4>
+                        <p>Lo stipendio netto annuo è il risultato finale dopo aver sottratto tutte le tasse:</p>
+                        <div class="formula highlight">
+                            <span>\( \text{Stipendio Netto} = \text{Imponibile} - \text{IRPEF Netta} - \text{Add. Regionale} - \text{Add. Comunale} \)</span>
+                        </div>
+                        <p>Per ottenere lo <strong>stipendio netto mensile</strong>, basta dividere l'importo per il numero di ratee previste dal tuo contratto (tipicamente 13 o 14).</p>
+                    </div>
+
+                    <div class="insight-note">
+                        <strong>Nota:</strong> I valori mostrati sono stime basate sulle aliquote fiscali vigenti. I tuoi effettivi potrebbero variare in base a specifiche clausole del contratto collettivo nazionale, agevolazioni fiscali personali o variazioni legislative.
+                    </div>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>© 2026 - Calcolatore Finanza Personale</p>
+    </footer>
+
+    <script>
+        // Dati delle aliquote regionali (embedded per evitare problemi con fetch)
+        const regionalTaxRates = {
+            "Abruzzo": { "rates": { "under_15000": 1.67, "15000_28000": 2.87, "28000_50000": 3.33, "over_50000": null } },
+            "Basilicata": { "rates": { "under_15000": 1.23, "15000_28000": null, "28000_50000": null, "over_50000": null } },
+            "Bolzano": { "rates": { "under_15000": 1.23, "15000_28000": 1.73, "28000_50000": null, "over_50000": null } },
+            "Calabria": { "rates": { "under_15000": 1.73, "15000_28000": null, "28000_50000": null, "over_50000": null } },
+            "Campania": { "rates": { "under_15000": 1.73, "15000_28000": 2.96, "28000_50000": 3.20, "over_50000": 3.33 } },
+            "Emilia-Romagna": { "rates": { "under_15000": 1.33, "15000_28000": 1.93, "28000_50000": 2.93, "over_50000": 3.33 } },
+            "Friuli-Venezia Giulia": { "rates": { "under_15000": 0.70, "15000_28000": 1.23, "28000_50000": null, "over_50000": null } },
+            "Lazio": { "rates": { "under_15000": 1.73, "15000_28000": 3.33, "28000_50000": null, "over_50000": null } },
+            "Liguria": { "rates": { "under_15000": 1.23, "15000_28000": 3.18, "28000_50000": 3.23, "over_50000": null } },
+            "Lombardia": { "rates": { "under_15000": 1.23, "15000_28000": 1.58, "28000_50000": 1.72, "over_50000": 1.73 } },
+            "Marche": { "rates": { "under_15000": 1.23, "15000_28000": 1.53, "28000_50000": 1.70, "over_50000": 1.73 } },
+            "Molise": { "rates": { "under_15000": 2.03, "15000_28000": 2.23, "28000_50000": 2.63, "over_50000": null } },
+            "Piemonte": { "rates": { "under_15000": 1.62, "15000_28000": 2.13, "28000_50000": 2.75, "over_50000": 3.33 } },
+            "Puglia": { "rates": { "under_15000": 1.33, "15000_28000": 1.43, "28000_50000": 1.63, "over_50000": 1.85 } },
+            "Sardegna": { "rates": { "under_15000": 1.23, "15000_28000": null, "28000_50000": null, "over_50000": null } },
+            "Sicilia": { "rates": { "under_15000": 1.23, "15000_28000": null, "28000_50000": null, "over_50000": null } },
+            "Toscana": { "rates": { "under_15000": 1.42, "15000_28000": 1.43, "28000_50000": 3.32, "over_50000": 3.33 } },
+            "Trento": { "rates": { "under_15000": 1.23, "15000_28000": 1.73, "28000_50000": null, "over_50000": null } },
+            "Umbria": { "rates": { "under_15000": 1.73, "15000_28000": 3.02, "28000_50000": 3.12, "over_50000": 3.33 } },
+            "Valle d'Aosta": { "rates": { "under_15000": 1.23, "15000_28000": null, "28000_50000": null, "over_50000": null } },
+            "Veneto": { "rates": { "under_15000": 1.23, "15000_28000": null, "28000_50000": null, "over_50000": null } }
+        };
+
+        let salaryChart = null;
+
+        // INPS calculation (9.1%)
+        function calculateINPS(grossAnnual) {
+            return grossAnnual * 0.091;
+        }
+
+        // Tax reduction calculation
+        function calculateTaxReduction(imponibile) {
+            if (imponibile < 15000) {
+                return 1955;
+            } else if (imponibile <= 28000) {
+                return 1910 + (1190 * (28000 - imponibile) / 13000);
+            } else if (imponibile <= 50000) {
+                return 1910 * ((50000 - imponibile) / 22000);
+            } else {
+                return 0;
+            }
+        }
+
+        // Fiscal cut calculation
+        function calculateTaglioCuneoFiscale(imponibile) {
+            if (imponibile <= 20000) {
+                if (imponibile <= 8500) {
+                    return imponibile * 0.071;
+                } else if (imponibile <= 15000) {
+                    return 8500 * 0.071 + (imponibile - 8500) * 0.053;
+                } else {
+                    return 8500 * 0.071 + (15000 - 8500) * 0.053 + (imponibile - 15000) * 0.048;
+                }
+            } else if (imponibile <= 32000) {
+                return 1000;
+            } else if (imponibile <= 40000) {
+                return 1000 * ((40000 - imponibile) / 8000);
+            } else {
+                return 0;
+            }
+        }
+
+        // Progressive IRPEF calculation
+        function calculateIRPEF(imponibile) {
+            if (imponibile < 28000) {
+                return 0.23 * imponibile;
+            } else if (imponibile <= 50000) {
+                const taxFirstBracket = 0.23 * 28000;
+                const taxSecondBracket = 0.33 * (imponibile - 28000);
+                return taxFirstBracket + taxSecondBracket;
+            } else {
+                const taxFirstBracket = 0.23 * 28000;
+                const taxSecondBracket = 0.33 * (50000 - 28000);
+                const taxThirdBracket = 0.43 * (imponibile - 50000);
+                return taxFirstBracket + taxSecondBracket + taxThirdBracket;
+            }
+        }
+
+        // Regional tax calculation
+        function calculateRegionalTax(region, imponibile) {
+            if (!regionalTaxRates || !regionalTaxRates[region]) {
+                return 0;
+            }
+
+            const rates = regionalTaxRates[region].rates;
+
+            function getClosestRate(rateKey, fallbackKeys) {
+                let rate = rates[rateKey];
+                if (rate !== null && rate !== undefined && !isNaN(rate)) {
+                    return rate;
+                }
+                for (const fallbackKey of fallbackKeys) {
+                    rate = rates[fallbackKey];
+                    if (rate !== null && rate !== undefined && !isNaN(rate)) {
+                        return rate;
+                    }
+                }
+                return 0;
+            }
+
+            let tax = 0;
+
+            if (imponibile < 15000) {
+                tax = imponibile * (getClosestRate('under_15000', []) / 100);
+            } else if (imponibile <= 28000) {
+                const firstBracket = 15000;
+                const secondBracket = imponibile - 15000;
+                tax = firstBracket * (getClosestRate('under_15000', []) / 100);
+                tax += secondBracket * (getClosestRate('15000_28000', ['under_15000']) / 100);
+            } else if (imponibile <= 50000) {
+                const firstBracket = 15000;
+                const secondBracket = 13000;
+                const thirdBracket = imponibile - 28000;
+                tax = firstBracket * (getClosestRate('under_15000', []) / 100);
+                tax += secondBracket * (getClosestRate('15000_28000', ['under_15000']) / 100);
+                tax += thirdBracket * (getClosestRate('28000_50000', ['15000_28000', 'under_15000']) / 100);
+            } else {
+                const firstBracket = 15000;
+                const secondBracket = 13000;
+                const thirdBracket = 22000;
+                const fourthBracket = imponibile - 50000;
+                tax = firstBracket * (getClosestRate('under_15000', []) / 100);
+                tax += secondBracket * (getClosestRate('15000_28000', ['under_15000']) / 100);
+                tax += thirdBracket * (getClosestRate('28000_50000', ['15000_28000', 'under_15000']) / 100);
+                tax += fourthBracket * (getClosestRate('over_50000', ['28000_50000', '15000_28000', 'under_15000']) / 100);
+            }
+
+            return tax;
+        }
+
+        // Currency formatting
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('it-IT', {
+                style: 'currency',
+                currency: 'EUR',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(value);
+        }
+
+        // Initialize Chart
+        function initChart() {
+            const canvas = document.getElementById('salary-chart');
+            if (!canvas) return null;
+
+            const ctx = canvas.getContext('2d');
+
+            return new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Contributi INPS', 'IRPEF', 'Addizionale Regionale', 'Riduzione Fiscale', 'Stipendio Netto'],
+                    datasets: [{
+                        data: [0, 0, 0, 0, 100],
+                        backgroundColor: [
+                            '#2196F3',
+                            '#F44336',
+                            '#FF9800',
+                            '#81C784',
+                            '#4CAF50'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.datasetIndex === 0 && (context.dataIndex === 3 || context.dataIndex === 4)) {
+                                        const rawData = salaryChart.data.datasets[0].rawData || [];
+                                        const netSalary = rawData[5];
+                                        return 'Stipendio Netto: ' + formatCurrency(netSalary);
+                                    }
+                                    return context.label + ': ' + formatCurrency(context.raw);
+                                },
+                                afterLabel: function(context) {
+                                    if (context.datasetIndex === 0 && (context.dataIndex === 3 || context.dataIndex === 4)) {
+                                        const rawData = salaryChart.data.datasets[0].rawData || [];
+                                        if (rawData.length >= 6) {
+                                            const taxReduction = rawData[3];
+                                            const taglioCuneo = rawData[4];
+                                            const netSalary = rawData[5];
+                                            const totalReductions = taxReduction + taglioCuneo;
+                                            const totalNet = totalReductions + netSalary;
+                                            const percent = context.dataIndex === 3
+                                                ? (totalReductions / totalNet * 100).toFixed(1)
+                                                : (netSalary / totalNet * 100).toFixed(1);
+                                            return 'di cui riduzioni totali (fiscale + cuneo): ' + formatCurrency(totalReductions) + ' (' + percent + '%)';
+                                        }
+                                    }
+                                    return '';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update chart with data
+        function updateChart(chart, grossAnnual, inpsContributions, irpef, regionalTax, taxReduction, netAnnual, taglioCuneo, municipalTax) {
+            if (!chart) return;
+
+            const totalReductions = taxReduction + taglioCuneo;
+
+            chart.data.datasets[0].data = [
+                inpsContributions,
+                irpef,
+                regionalTax,
+                totalReductions,
+                netAnnual
+            ];
+            chart.data.datasets[0].rawData = [
+                inpsContributions,
+                irpef,
+                regionalTax,
+                taxReduction,
+                taglioCuneo,
+                netAnnual
+            ];
+            chart.update();
+        }
+
+        // Update breakdown table
+        function updateTable(grossAnnual, inpsContributions, imponibile, irpef, taxReduction, taglioCuneo, netIrpef, regionalTaxAmount, municipalTaxAmount, netAnnual, netMonthly) {
+            const totalDeductions = inpsContributions + netIrpef + regionalTaxAmount + municipalTaxAmount;
+
+            const getElement = (id) => document.getElementById(id);
+
+            if (getElement('gross-yearly')) getElement('gross-yearly').textContent = formatCurrency(grossAnnual);
+            if (getElement('inps-amount')) getElement('inps-amount').textContent = formatCurrency(inpsContributions);
+            if (getElement('taxable-income')) getElement('taxable-income').textContent = formatCurrency(imponibile);
+            if (getElement('irpef-gross')) getElement('irpef-gross').textContent = formatCurrency(irpef);
+            if (getElement('tax-reduction')) getElement('tax-reduction').textContent = formatCurrency(taxReduction);
+            if (getElement('cuneo-fiscale')) getElement('cuneo-fiscale').textContent = formatCurrency(taglioCuneo);
+            if (getElement('irpef-net')) getElement('irpef-net').textContent = formatCurrency(netIrpef);
+            if (getElement('regional-tax')) getElement('regional-tax').textContent = formatCurrency(regionalTaxAmount);
+            if (getElement('municipal-tax-amount')) getElement('municipal-tax-amount').textContent = formatCurrency(municipalTaxAmount);
+            if (getElement('total-deductions')) getElement('total-deductions').textContent = formatCurrency(totalDeductions);
+            if (getElement('net-yearly')) getElement('net-yearly').textContent = formatCurrency(netAnnual);
+            if (getElement('net-monthly-table')) getElement('net-monthly-table').textContent = formatCurrency(netMonthly);
+        }
+
+        // Calculate thirteenth month
+        function calculateThirteenthMonth(grossMonthly, monthlyPayments) {
+            return monthlyPayments >= 13 ? grossMonthly : 0;
+        }
+
+        // Calculate fourteenth month
+        function calculateFourteenthMonth(grossMonthly, monthlyPayments) {
+            return monthlyPayments >= 14 ? grossMonthly : 0;
+        }
+
+        // Calculate employer cost
+        function calculateEmployerCost(grossAnnual) {
+            return grossAnnual * 1.31;
+        }
+
+        // Initialize salary calculator
+        function initializeSalaryCalculator() {
+            salaryChart = null;
+
+            const salaryForm = document.getElementById('salary-form');
+            if (!salaryForm) return;
+
+            const grossMonthlyEl = document.getElementById('gross-monthly');
+            const netMonthlyEl = document.getElementById('net-monthly');
+            const thirteenthMonthEl = document.getElementById('thirteenth-month');
+            const fourteenthMonthEl = document.getElementById('fourteenth-month');
+            const employerCostEl = document.getElementById('employer-cost');
+
+            // Initialize chart
+            salaryChart = initChart();
+
+            // Form submission handler
+            salaryForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const grossAnnual = parseFloat(document.getElementById('gross-salary').value) || 0;
+                const monthlyPayments = parseInt(document.getElementById('monthly-payments').value) || 13;
+                const region = document.getElementById('region').value;
+                const municipalTaxRate = parseFloat(document.getElementById('municipal-tax').value) || 0.80;
+
+                // Calculate all values
+                const inpsContributions = calculateINPS(grossAnnual);
+                const imponibile = grossAnnual - inpsContributions;
+                const irpef = calculateIRPEF(imponibile);
+                const taxReduction = calculateTaxReduction(imponibile);
+                const taglioCuneoFiscale = calculateTaglioCuneoFiscale(imponibile);
+                const netIrpef = Math.max(0, irpef - taxReduction - taglioCuneoFiscale);
+                const regionalTaxAmount = calculateRegionalTax(region, imponibile);
+                const municipalTaxAmount = imponibile * (municipalTaxRate / 100);
+                const netAnnual = imponibile - netIrpef - regionalTaxAmount - municipalTaxAmount;
+                const netMonthly = netAnnual / monthlyPayments;
+                const grossMonthly = grossAnnual / monthlyPayments;
+
+                const thirteenthMonth = calculateThirteenthMonth(grossMonthly, monthlyPayments);
+                const fourteenthMonth = calculateFourteenthMonth(grossMonthly, monthlyPayments);
+                const employerCost = calculateEmployerCost(grossAnnual);
+
+                // Update UI
+                if (grossMonthlyEl) grossMonthlyEl.textContent = formatCurrency(grossMonthly);
+                if (netMonthlyEl) netMonthlyEl.textContent = formatCurrency(netMonthly);
+                if (thirteenthMonthEl) thirteenthMonthEl.textContent = formatCurrency(thirteenthMonth);
+                if (fourteenthMonthEl) fourteenthMonthEl.textContent = formatCurrency(fourteenthMonth);
+                if (employerCostEl) employerCostEl.textContent = formatCurrency(employerCost);
+
+                // Update chart and table
+                updateChart(salaryChart, grossAnnual, inpsContributions, irpef, regionalTaxAmount, taxReduction, netAnnual, taglioCuneoFiscale, municipalTaxAmount);
+                updateTable(grossAnnual, inpsContributions, imponibile, irpef, taxReduction, taglioCuneoFiscale, netIrpef, regionalTaxAmount, municipalTaxAmount, netAnnual, netMonthly);
+
+                // Show results section
+                const resultsSection = document.getElementById('results');
+                if (resultsSection) resultsSection.style.display = 'block';
+            });
+
+            // Pre-populate with example value
+            const grossSalaryInput = document.getElementById('gross-salary');
+            if (grossSalaryInput) {
+                grossSalaryInput.value = '30000';
+                // Auto-submit
+                salaryForm.dispatchEvent(new Event('submit'));
+            }
+        }
+
+        // DOM ready
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSalaryCalculator();
+        });
+    </script>
+</body>
+</html>

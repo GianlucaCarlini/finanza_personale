@@ -15,6 +15,55 @@ body {
     flex-direction: column;
 }
 
+/* Status Bar (Navigation) */
+.status-bar {
+    background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+    color: white;
+    padding: 0.75rem 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.status-bar-content {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 0 1rem;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: rgba(255, 255, 255, 0.75);
+    text-decoration: none;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.status-item .status-icon {
+    font-size: 1.1rem;
+}
+
+.status-item:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.status-item.active {
+    background: #3949ab;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.status-item.active .status-icon {
+    transform: scale(1.1);
+}
+
 /* Header */
 .header {
     background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
@@ -35,10 +84,15 @@ body {
 
 /* Container principale */
 .container {
-    max-width: 900px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 2rem 1rem;
     flex: 1;
+}
+
+.container.large-container {
+    max-width: 1400px;
+    padding: 2rem 2rem;
 }
 
 /* Sezione calcolatrice */
@@ -218,6 +272,371 @@ body {
     display: inline-block;
 }
 
+/* Sezione dettaglio calcolo */
+.breakdown-section {
+    margin-top: 2rem;
+}
+
+.breakdown-section h3 {
+    color: #1a237e;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    border-bottom: 2px solid #1a237e;
+    padding-bottom: 0.5rem;
+}
+
+.breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.breakdown-table th,
+.breakdown-table td {
+    padding: 1rem;
+    text-align: right;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.breakdown-table th:first-child,
+.breakdown-table td:first-child {
+    text-align: left;
+    font-weight: 500;
+}
+
+.breakdown-table td:nth-child(2) {
+    text-align: right;
+}
+
+.breakdown-table thead {
+    background: #1a237e;
+    color: white;
+}
+
+.breakdown-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.breakdown-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.total-row {
+    background-color: #f0f0f0;
+    font-weight: 600;
+}
+
+.net-row {
+    background-color: #e8f5e9;
+    font-weight: 600;
+    color: #2e7d32;
+}
+
+.net-row td:first-child {
+    color: #2e7d32;
+}
+
+/* Insight Section */
+.insight-section {
+    margin-top: 2.5rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf4 100%);
+    border-radius: 12px;
+    border-left: 4px solid #1a237e;
+}
+
+.insight-section h3 {
+    color: #1a237e;
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
+    border-bottom: 2px solid #1a237e;
+    padding-bottom: 0.5rem;
+}
+
+.insight-content {
+    max-width: 100%;
+}
+
+.insight-content > p {
+    color: #444;
+    margin-bottom: 1.5rem;
+    line-height: 1.7;
+}
+
+.insight-step {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.insight-step h4 {
+    color: #1a237e;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.insight-step p {
+    color: #555;
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+}
+
+.insight-step ul {
+    margin: 0.5rem 0 1rem 1.5rem;
+    color: #555;
+}
+
+.insight-step li {
+    margin-bottom: 0.25rem;
+}
+
+.formula {
+    background: #e3f2fd;
+    padding: 1rem;
+    border-radius: 6px;
+    border-left: 3px solid #2196F3;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.95rem;
+    margin: 1rem 0;
+    color: #1565c0;
+    line-height: 1.8;
+}
+
+.formula.highlight {
+    background: #e8f5e9;
+    border-left-color: #4CAF50;
+    color: #2e7d32;
+    font-weight: 500;
+    padding: 1.5rem;
+    line-height: 2.2;
+    margin: 1.5rem 0;
+}
+
+.formula-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0;
+}
+
+.formula-list li {
+    padding: 0.75rem 1rem;
+    margin: 0.5rem 0;
+    background: #f0f7f0;
+    border-radius: 6px;
+    border-left: 3px solid #4CAF50;
+    line-height: 2.0;
+    font-size: 1rem;
+}
+
+.formula-list li:last-child {
+    margin-bottom: 0;
+}
+
+.insight-note {
+    background: #fff3e0;
+    padding: 1rem;
+    border-radius: 6px;
+    border-left: 3px solid #ff9800;
+    margin-top: 1.5rem;
+}
+
+.insight-note strong {
+    color: #e65100;
+}
+
+/* Pension Section */
+.pension-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    animation: fadeIn 0.5s ease;
+}
+
+.pension-placeholder {
+    background: #f5f7fa;
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+.pension-placeholder h3 {
+    color: #1a237e;
+    margin-bottom: 0.5rem;
+}
+
+.hidden {
+    display: none;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* CCNL Section */
+.ccnl-section {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.ccnl-section h2 {
+    color: #1a237e;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    border-bottom: 2px solid #1a237e;
+    padding-bottom: 0.5rem;
+}
+
+.ccnl-commercio-section {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.ccnl-commercio-section h2 {
+    color: #1a237e;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    border-bottom: 2px solid #1a237e;
+    padding-bottom: 0.5rem;
+}
+
+.ccnl-commercio-section > p {
+    color: #666;
+    margin-bottom: 2.5rem;
+    font-size: 1.1rem;
+}
+
+.ccnl-metalmeccanici-section {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.ccnl-metalmeccanici-section h2 {
+    color: #1a237e;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    border-bottom: 2px solid #1a237e;
+    padding-bottom: 0.5rem;
+}
+
+.ccnl-metalmeccanici-section > p {
+    color: #666;
+    margin-bottom: 2.5rem;
+    font-size: 1.1rem;
+}
+
+.ccnl-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.ccnl-card {
+    background: #f9f9f9;
+    border-radius: 10px;
+    padding: 2rem;
+    border: 1px solid #e0e0e0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ccnl-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ccnl-card h3 {
+    color: #1a237e;
+    margin-bottom: 1.25rem;
+    font-size: 1.3rem;
+}
+
+.ccnl-card > p {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 1.25rem;
+}
+
+.ccnl-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.25rem;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    font-size: 1rem;
+}
+
+.ccnl-table th,
+.ccnl-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.ccnl-table th {
+    background: #1a237e;
+    color: white;
+    font-weight: 600;
+}
+
+.ccnl-table tbody tr:nth-child(even) {
+    background-color: #f5f5f5;
+}
+
+.ccnl-table tbody tr:hover {
+    background-color: #e3f2fd;
+}
+
+.ccnl-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.benefits-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.benefits-list li {
+    padding: 0.75rem 0;
+    color: #444;
+    font-size: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.benefits-list li:last-child {
+    border-bottom: none;
+}
+
+.benefits-list strong {
+    color: #1a237e;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .header h1 {
@@ -242,5 +661,27 @@ body {
 
     .legend-item {
         font-size: 0.8rem;
+    }
+
+    .insight-section {
+        padding: 1.5rem;
+    }
+
+    .formula {
+        font-size: 0.85rem;
+        padding: 0.5rem;
+    }
+
+    .ccnl-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ccnl-table {
+        font-size: 0.8rem;
+    }
+
+    .ccnl-table th,
+    .ccnl-table td {
+        padding: 0.5rem;
     }
 }
